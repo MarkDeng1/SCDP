@@ -122,9 +122,12 @@ def process_tensors(tensor_list,p):
         result2.append(binary_to_decimal(item))
     
     source_tensor = torch.tensor(result2)
-    reshaped_tensor = source_tensor.reshape(tensor_list[0].shape)
-    reshaped_tensor.requires_grad = True
-    
+    if source_tensor.numel() != 1 and source_tensor.numel() != 0:
+        reshaped_tensor = source_tensor.reshape(tensor_list[0].shape)
+        reshaped_tensor.requires_grad = True
+    else:
+        reshaped_tensor = source_tensor 
+        reshaped_tensor.requires_grad = True
     return reshaped_tensor
 
 
