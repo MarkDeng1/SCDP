@@ -28,8 +28,8 @@ def args_parser():
                         help="testset batch size")
 
     # federated arguments
-    parser.add_argument('--model', type=str, default='resnet18',
-                        choices=['simpleCNN', 'ResNet18','ResNet34'],
+    parser.add_argument('--model', type=str, default='convnet',
+                        choices=['simpleCNN', 'ResNet18','ResNet34','convnet'],
                         help="model to use (cnn, mlp)")
     parser.add_argument('--num_users', type=int, default=30,
                         help="number of users participating in the federated learning")
@@ -77,11 +77,13 @@ def args_parser():
                         help="momentum")
     parser.add_argument('--lr_scheduler', action='store_false',
                         help="reduce the learning rate when val_acc has stopped improving (increasing)")
-    parser.add_argument('--device', type=str, default='cuda:1',
+    parser.add_argument('--device', type=str, default='cpu',
                         choices=['cuda:0', 'cuda:1', 'cpu'],
                         help="device to use (gpu or cpu)")
     parser.add_argument('--seed', type=float, default=1234,
                         help="manual seed for reproducibility")
+    parser.add_argument('--parallel', action = 'store_true', default = True,
+                        help="whether to perform parallel calculation")
 
     args = parser.parse_args()
     return args

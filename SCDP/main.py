@@ -36,6 +36,13 @@ if __name__ == '__main__':
         global_model = model.ResNet(model.BasicBlock, [2, 2, 2, 2], num_classes=args.num_class)
     elif args.model == 'resnet34':
         global_model = model.ResNet34(args.num_class)
+    elif args.model == 'convnet':
+        if args.data == 'mnist':
+            global_model = model.ConvNet(width=28)
+        else:
+            global_model = model.ConvNet(width=32)
+    else:
+        exit('Error: unrecognized model')
     
     textio.cprint(str(summary(global_model)))
     global_model.to(args.device)
