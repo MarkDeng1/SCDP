@@ -82,7 +82,8 @@ def args_parser():
                         help="device to use (gpu or cpu)")
     parser.add_argument('--seed', type=float, default=1234,
                         help="manual seed for reproducibility")
-    parser.add_argument('--parallel', action = 'store_true', default = True,
+
+    parser.add_argument('--parallel', type = bool, default = True,
                         help="whether to perform parallel calculation")
 
     args = parser.parse_args()
