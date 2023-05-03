@@ -5,7 +5,7 @@ import math
 import numpy as np
 from quantization import LatticeQuantization, ScalarQuantization
 from configurations import args_parser
-from concurrent.futures import ThreadPoolExecutor
+import concurrent.futures
 # from privacy import Privacy
 from integer_convert import binary_convert,process_tensors
 
@@ -34,31 +34,27 @@ def distribute_model(local_models, global_model):
         local_models[user_idx]['model'].load_state_dict(copy.deepcopy(global_model.state_dict()))
 
 
-def process_user(user_idx, state_dict, local_models, mechanism, binary_convert, args):
-    local_weights_average = torch.zeros_like(state_dict[key])
-    local_weights_orig = local_models[user_idx]['model'].state_dict()[key] - state_dict[key]
+
+def process_user(user_idx ,state_dict_key, local_models, mechanism, binary_convert, args,state_dic):
+    local_weights_orig = local_models[user_idx]['model'].state_dict()[state_dict_key] - state_dic[state_dict_key]
     local_weights = mechanism(local_weights_orig)
     local_weights_bi = binary_convert(local_weights, p=0.98)
-    
     return local_weights_bi, local_weights
 
 def parallel_for(state_dict, local_models, mechanism, binary_convert, args):
     for key in state_dict.keys():
-        with ThreadPoolExecutor() as executor:
-            results = executor.map(process_user, range(0, len(local_models)), 
-                                   [state_dict[key]]*len(local_models),
-                                   [local_models]*len(local_models),
-                                   [mechanism]*len(local_models),
-                                   [binary_convert]*len(local_models),
-                                   [args]*len(local_models))
-            
-        local_weights_bi_list = []
         local_weights_average = torch.zeros_like(state_dict[key])
-        for local_weights_bi, local_weights in results:
-            local_weights_bi_list.append(local_weights_bi)
-            local_weights_average += local_weights
-        
-        value = state_dict[key] + process_tensors(local_weights_bi_list, p=0.98).to(args.device)
+        SNR_users = []
+        list_local_weights = []
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = [executor.submit(process_user, user_idx, key, local_models, mechanism, binary_convert, args,state_dict) for user_idx in range(0, len(local_models))]
+            for future in concurrent.futures.as_completed(futures):
+                local_weights_bi, local_weights = future.result()
+                list_local_weights.append(local_weights_bi)
+                local_weights_average += local_weights
+
+        value = state_dict[key] + process_tensors(list_local_weights, p=0.98).to(args.device)
         state_dict[key] = value.detach().clone()
 
 def update_state_dict(state_dict, local_models, mechanism, binary_convert, process_tensors, args):
