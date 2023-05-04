@@ -41,7 +41,7 @@ def args_parser():
                         help="number of global epochs")
 
     # privacy arguments
-    parser.add_argument('--privacy', action='store_true', default=True,
+    parser.add_argument('--privacy',type=bool, default=True,
                         help="whether to preserve privacy")
     parser.add_argument('--privacy_noise', type=str, default='jopeq_vector',
                         choices=['laplace', 't', 'jopeq_scalar', 'jopeq_vector'],
@@ -55,7 +55,7 @@ def args_parser():
     # (epsilon, sigma_squared, nu): (0.84,3,3), (1,2,3), (2,1,12), (2,0.5,4), (3,1,32), (3,0.5,14), (3,0.2,4), (4,0.85,50), (4,0.1,3), (4,0.2,4), (4,0.5,29)
 
     # quantization arguments
-    parser.add_argument('--quantization', action='store_true', default=True,
+    parser.add_argument('--quantization', type=bool, default=True,
                         help="whether to perform quantization")
     parser.add_argument('--lattice_dim', type=int, default=2,
                         choices=[1, 2], 
