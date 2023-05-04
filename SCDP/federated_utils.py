@@ -41,13 +41,15 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
         list_local_weights = []
         for user_idx in range(0, len(local_models)):
             local_weights_orig = local_models[user_idx]['model'].state_dict()[key] - state_dict[key]
+            print("key:",key)
             if args.privacy and args.quantization:
-                if key.startswith('model.bn'):
-                    local_weights_average += local_weights_orig
-                else:
-                    local_weights = mechanism(local_weights_orig)
+                local_weights = mechanism(local_weights_orig)
+                if key.startswith('model.fc'):
                     local_weights_bi = binary_convert(local_weights, p=0.98)
                     list_local_weights.append(local_weights_bi)
+                else:
+                    local_weights_average += local_weights
+                    
             elif args.quantization:
                 local_weights = mechanism(local_weights_orig)
                 local_weights_average += local_weights
