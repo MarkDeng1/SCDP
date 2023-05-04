@@ -56,11 +56,12 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
             else: 
                 local_weights_average += local_weights_orig
         if args.privacy and args.quantization:
-            if key.startswith('model.bn'):
-                state_dict[key] += (local_weights_average / len(local_models)).to(state_dict[key].dtype)
-            else:
+            if key.startswith('model.fc'):
                 value = state_dict[key] + process_tensors(list_local_weights, p=0.98).to(args.device)
                 state_dict[key] = value.detach().clone()
+            else:
+                state_dict[key] += (local_weights_average / len(local_models)).to(state_dict[key].dtype)
+                
         else:
             state_dict[key] += (local_weights_average / len(local_models)).to(state_dict[key].dtype)
 def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
