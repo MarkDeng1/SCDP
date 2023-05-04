@@ -63,7 +63,7 @@ if __name__ == '__main__':
     
     # training loops
     local_models = federated_utils.federated_setup(global_model, train_data, args)
-    mechanism = federated_utils.JoPEQ(args)
+    mechanism = federated_utils.Quantize(args)
 
     SNR_list = []
     for global_epoch in tqdm(range(0, args.global_epochs)):
