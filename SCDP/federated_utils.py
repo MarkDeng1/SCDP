@@ -44,7 +44,7 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
             print("key:",key)
             if args.privacy and args.quantization:
                 local_weights = mechanism(local_weights_orig)
-                if key.startswith('model.fc'):
+                if key.startswith('linear'):
                     local_weights_bi = binary_convert(local_weights, p=0.98)
                     list_local_weights.append(local_weights_bi)
                 else:
@@ -56,7 +56,7 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
             else: 
                 local_weights_average += local_weights_orig
         if args.privacy and args.quantization:
-            if key.startswith('model.fc'):
+            if key.startswith('linear'):
                 value = state_dict[key] + process_tensors(list_local_weights, p=0.98).to(args.device)
                 state_dict[key] = value.detach().clone()
             else:
