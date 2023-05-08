@@ -16,7 +16,7 @@ from collections import defaultdict
 import datetime
 import time
 import os
-import quantization
+from quantization import LatticeQuantization, ScalarQuantization
 import integer_convert
 
 
@@ -29,6 +29,61 @@ defs.epochs = args.epochs
 if args.deterministic:
     image2graph2vec.utils.set_deterministic()
 
+class Quantize:  # Privacy Quantization class
+    def __init__(self, args):
+        args = inversefed.options().parse_args()
+        self.vec_normalization = True
+        dither_var = None
+        if args.quantization:
+            if args.lattice_dim > 1:
+                self.quantizer = LatticeQuantization(args)
+                dither_var = self.quantizer.P0_cov
+            else:
+                self.quantizer = ScalarQuantization(args)
+                dither_var = (self.quantizer.delta ** 2) / 12
+        else:
+            self.quantizer = None
+
+    def divide_into_blocks(self, input, dim=2):
+        # Zero pad if needed
+        modulo = len(input) % dim
+        if modulo:
+            pad_with = dim - modulo
+            input_vec = torch.cat((input, torch.zeros(pad_with).to(input.dtype).to(input.device)))
+        else:
+            pad_with = 0
+        # 把输入自动变换维度
+        input_vec = input.view(dim, -1)  # divide input into blocks
+        return input_vec, pad_with,
+
+    def __call__(self, input):
+        original_shape = input.shape
+        input = torch.from_numpy(input)
+
+        if input.numel() != 1 and input.numel() != 0:
+        # 把input一维展开
+            input = input.view(-1)
+            if self.vec_normalization:  # normalize
+                input, pad_with = self.divide_into_blocks(input)
+            # 计算输入input的均值和标准差
+            mean = torch.mean(input, dim=-1, keepdim=True)
+            std = torch.norm(input - mean) / (input.shape[-1] ** 0.5)
+            std = 3 * std
+            input = (input - mean) / std
+
+
+            if self.quantizer is not None:
+                input = self.quantizer(input).to('cpu')
+
+            # denormalize
+            input = (input * std) + mean
+
+            if self.vec_normalization:
+                input = input.view(-1)[:-pad_with] if pad_with else input  # remove zero padding
+
+            input = input.reshape(original_shape)
+
+        return input
 
 if __name__ == "__main__":
     # Choose GPU device and print status information:
@@ -110,18 +165,23 @@ if __name__ == "__main__":
         input_gradient[8] = input_gradient[8] * torch.Tensor(mask).to(**setup)
     elif args.model == 'ConvNet' and args.defense == 'ours':
         input_gradient[-2] = input_gradient[-2] * torch.Tensor(mask).to(**setup)
+    
+    # set scdp 
     elif args.model == 'ConvNet' and args.defense == 'scdp':
+        print(input_gradient[33].shape)
         FC_layer_idx = len(input_gradient) - 2
         for i in range(len(input_gradient)):
             grad_tensor = input_gradient[i].cpu().numpy()
             # lattice quantization
-            input_gradient[i] =quantization.Quantize(grad_tensor)
+            input_gradient[i] = Quantize(args)(grad_tensor)
+        
             if args.binary and i == FC_layer_idx:
                 binary_weight = integer_convert.binary_convert(input_gradient[i], p=0.98)
                 input_gradient[i] = binary_weight
             if args.binary and i == FC_layer_idx + 1:
                 binary_weight = integer_convert.binary_convert(input_gradient[i], p=0.98)
                 input_gradient[i] = binary_weight
+            input_gradient[i] = torch.Tensor(input_gradient[i]).to(**setup)
             
 
 

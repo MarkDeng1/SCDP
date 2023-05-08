@@ -22,9 +22,11 @@ class LatticeQuantization:
 
     def __call__(self, input_vec):
         dither = torch.zeros_like(input_vec, dtype=input_vec.dtype)
+        device = self.gen_mat.device
+        dither = dither.to(device)
         dither = torch.matmul(self.gen_mat, dither.uniform_(-self.delta / 2, self.delta / 2))  # generate dither
 
-        input_vec = input_vec + dither
+        input_vec = input_vec.to(device) + dither
 
         # quantize
         orthogonal_space = torch.matmul(torch.inverse(self.gen_mat), input_vec)
