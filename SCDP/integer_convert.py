@@ -17,7 +17,8 @@ def convert_to_binary(num):
     if num >= 0:
         binary_number = bin(num)[2:].zfill(32)
     else:
-        binary_number = bin((1 << 32) + num)[2:]
+        binary_number = bin(num)[3:].zfill(32)
+        binary_number = '1' + binary_number[1:]
     return binary_number
 
 
@@ -25,7 +26,8 @@ def convert_to_binary(num):
 def binary_to_decimal(binary):
     
     if binary[0] == '1':
-        decimal_number = int(binary, 2) - (1 << 32)
+        binary1 = '0' + binary[1:]
+        decimal_number = -int(binary1, 2) 
     else:
         decimal_number = int(binary, 2)
     decimal_number /= 100000

@@ -41,7 +41,6 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
         list_local_weights = []
         for user_idx in range(0, len(local_models)):
             local_weights_orig = local_models[user_idx]['model'].state_dict()[key] - state_dict[key]
-            print("key:",key)
             if args.privacy and args.quantization:
                 local_weights = mechanism(local_weights_orig)
                 if key.startswith('linear'):
