@@ -1,11 +1,13 @@
 """Parser options."""
 
 import argparse
-
+import numpy as np
 def options():
     """Construct the central argument parser, filled with useful defaults."""
     parser = argparse.ArgumentParser(description='Reconstruct some image from a trained model.')
-
+    parser.add_argument('--device', type=str, default='cuda:0',
+                        choices=['cuda:0', 'cuda:1', 'cpu'],
+                        help="device to use (gpu or cpu)")
     # Central:
     parser.add_argument('--model', default='ConvNet', type=str, help='Vision model.')
     parser.add_argument('--dataset', default='CIFAR10', type=str)
@@ -36,6 +38,18 @@ def options():
 
     # SCDP
     # quantization arguments
+    parser.add_argument('--privacy',type=bool, default=True,
+                        help="whether to preserve privacy")
+    parser.add_argument('--privacy_noise', type=str, default='jopeq_vector',
+                        choices=['laplace', 't', 'jopeq_scalar', 'jopeq_vector'],
+                        help="types of PPNs to choose from")
+    parser.add_argument('--epsilon', type=float, default=4,
+                        help="privacy budget (epsilon)")
+    parser.add_argument('--sigma_squared', type=float, default=0.2,
+                        help="scale for t-dist Sigma (identity matrix)")
+    parser.add_argument('--nu', type=float, default=4,
+                        help="degrees of freedom for t-dist")
+
     parser.add_argument('--quantization', type=bool, default=True,
                         help="whether to perform quantization")
     parser.add_argument('--binary', type=bool, default=True,
@@ -53,7 +67,7 @@ def options():
 
 
     # Files and folders:
-    parser.add_argument('--save_image', action='store_true', help='Save the output to a file.')
+    parser.add_argument('--save_image', type=bool,default=True, help='Save the output to a file.')
 
     parser.add_argument('--image_path', default='images_new/', type=str)
     parser.add_argument('--model_path', default='models/', type=str)
@@ -65,8 +79,8 @@ def options():
     parser.add_argument('--dryrun', action='store_true', help='Run everything for just one step to test functionality.')
 
     # Defense strategy:
-    parser.add_argument('--defense', default='no', type=str, help='defense strategy.')
-    parser.add_argument('--pruning_rate', default=0, type=float, help='pruning rate for defense.')
+    parser.add_argument('--defense', default='scdp', type=str, help='defense strategy.')
+    parser.add_argument('--pruning_rate', default=100, type=float, help='pruning rate for defense.')
     
     return parser
 
