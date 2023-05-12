@@ -131,16 +131,16 @@ if __name__ == '__main__':
 
 
 
-                    for i in range(len(y)):
-                    #     if u[i, 0] > 0:
-                    #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
-                    #     else:
-                    #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) - 1) / (np.exp(epsilon_user[i, :]) + 1))
+                    # for i in range(len(y)):
+                    # #     if u[i, 0] > 0:
+                    # #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
+                    # #     else:
+                    # #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) - 1) / (np.exp(epsilon_user[i, :]) + 1))
 
-                        if u[i, 0] > 0:
-                            y[i, :] = center + radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
-                        else:
-                            y[i, :] = center - radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
+                    #     if u[i, 0] > 0:
+                    #         y[i, :] = center + radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
+                    #     else:
+                    #         y[i, :] = center - radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
 
                     w[key] = torch.from_numpy(y)
 
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
             # global_weights[key] = partial_global_weights[key].reshape(shapes_global[key])
 
-            print('key: ', key, '\t global_weights: ', global_weights[key].shape)
+            # print('key: ', key, '\t global_weights: ', global_weights[key].shape)
 
         global_model.load_state_dict(global_weights)
         # global_model.load_state_dict(partial_global_weights)
@@ -193,11 +193,11 @@ if __name__ == '__main__':
             list_acc.append(acc)
             list_loss.append(loss)
         train_accuracy.append(sum(list_acc) / len(list_acc))
+        # test_acc, test_loss = test_inference(args, global_model, test_loader_all)
         
 
-        print(f'\nAvg Training States after {epoch + 1} global rounds:')
-        print(f'Avg Training Loss : {train_loss[-1]}')
-        print("Avg Test Accuracy : {:.2f}%".format(100 * train_accuracy[-1]))
+        # print(f'\nAvg Training States after {epoch + 1} global rounds: || Avg Training Loss : {train_loss[-1]} || Avg Test Accuracy : {100 * train_accuracy[-1]}' )
+        print(f'\nAvg Training States after {epoch + 1} global rounds: || Avg Training Loss : {train_loss[-1]} || Avg Test Accuracy : {100 * train_accuracy[-1]}' )
 
         if math.isnan(train_loss[-1]):
             train_loss.pop()
