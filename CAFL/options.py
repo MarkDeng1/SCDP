@@ -67,7 +67,7 @@ def args_parser():
     parser.add_argument('--seed', type=int, default=1, help='random seed')
 
     # DP arguments
-    parser.add_argument('--epsilon', type=float, default=100, help='privacy budget in DP')
+    parser.add_argument('--epsilon', type=float, default=1, help='privacy budget in DP')
 
     # CS arguments
     parser.add_argument('--compression_ratio', type=float, default=0.5)

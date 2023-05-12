@@ -129,16 +129,18 @@ if __name__ == '__main__':
                     for i in range(len(y)):
                         u[i, 0] = np.random.binomial(1, Pr[i, :])
 
-                    # for i in range(len(y)):
+
+
+                    for i in range(len(y)):
                     #     if u[i, 0] > 0:
                     #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
                     #     else:
                     #         y[i, :] = center + miu[i, :] * ((np.exp(epsilon_user[i, :]) - 1) / (np.exp(epsilon_user[i, :]) + 1))
 
-                    #     if u[i, 0] > 0:
-                    #         y[i, :] = center + radius * ((np.exp(epsilon_user) + 1) / (np.exp(epsilon_user) - 1))
-                    #     else:
-                    #         y[i, :] = center - radius * ((np.exp(epsilon_user) + 1) / (np.exp(epsilon_user) - 1))
+                        if u[i, 0] > 0:
+                            y[i, :] = center + radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
+                        else:
+                            y[i, :] = center - radius * ((np.exp(epsilon_user[i, :]) + 1) / (np.exp(epsilon_user[i, :]) - 1))
 
                     w[key] = torch.from_numpy(y)
 
@@ -186,14 +188,16 @@ if __name__ == '__main__':
         for k in range(args.num_users):
             local_model = LocalUpdate(args=args, dataset=train_dataset,
                                       index_of_samples=user_samples[k])
+                            
             acc, loss = local_model.inference(model=global_model)
             list_acc.append(acc)
             list_loss.append(loss)
         train_accuracy.append(sum(list_acc) / len(list_acc))
+        
 
         print(f'\nAvg Training States after {epoch + 1} global rounds:')
         print(f'Avg Training Loss : {train_loss[-1]}')
-        print('Avg Training Accuracy : {:.2f}% \n'.format(100 * train_accuracy[-1]))
+        print("Avg Test Accuracy : {:.2f}%".format(100 * train_accuracy[-1]))
 
         if math.isnan(train_loss[-1]):
             train_loss.pop()
