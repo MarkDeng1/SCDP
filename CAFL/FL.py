@@ -111,7 +111,7 @@ if __name__ == '__main__':
                     weights_numbers[key] = torch.tensor(N)
                     M = max(int(args.compression_ratio * N), 1)
 
-                    w_dct = dct(w[key].numpy().reshape((-1, 1)))
+                    w_dct = dct(w[key].cpu().numpy().reshape((-1, 1)))
                     e = epoch
                     if e >= int(N / M):
                         e = e - int(N / M) * int(epoch / int(N / M))
@@ -171,7 +171,7 @@ if __name__ == '__main__':
                 e = e - int(N / M) * int(epoch / int(N / M))
             rec_matrix[e * M:min((e + 1) * M, N), :] = partial_global_weights[key]
             x_rec = idct(rec_matrix)
-            global_weights_1D = global_weights[key].numpy().reshape((-1, 1))
+            global_weights_1D = global_weights[key].cpu().numpy().reshape((-1, 1))
             global_weights_1D[e * M:min((e + 1) * M, N), :] = (global_weights_1D[e * M:min((e + 1) * M, N), :] + x_rec[e * M:min((e + 1) * M, N), :]) / 2
             global_weights[key] = torch.from_numpy(global_weights_1D.reshape(shapes_global[key]))
 
