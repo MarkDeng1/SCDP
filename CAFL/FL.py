@@ -98,13 +98,17 @@ if __name__ == '__main__':
 
             local_model = LocalUpdate(args=args,dataset=train_dataset,
                                       index_of_samples=user_samples[k])
+            
+            global_model_state_dict = copy.deepcopy(global_model.state_dict())
+            global_model = model.ResNet(model.BasicBlock, [2, 2, 2, 2], num_classes=args.num_class)
+            global_model.load_state_dict(global_model_state_dict)
 
             w,loss = local_model.local_train(
                 model=copy.deepcopy(global_model),global_round=epoch)
 
             local_weights_.append(copy.deepcopy(w))
 
-            if args.model == 'simpleCNN':
+            if args.model in {'simpleCNN','convnet','resnet18'} :
                 for key,_ in list(w.items()):
                     
                     N = w[key].numel()
