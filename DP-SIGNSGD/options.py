@@ -9,6 +9,8 @@ def args_parser():
     parser = argparse.ArgumentParser()
 
     # federated arguments (Notation for the arguments followed from paper)
+    parser.add_argument('--exp_name', type=str, default='exp',
+                        help="the name of the current experiment")
     parser.add_argument('--epochs', type=int, default=95,
                         help="number of rounds of training")
     parser.add_argument('--num_users', type=int, default=20,
@@ -19,13 +21,19 @@ def args_parser():
                         help="the number of local epochs: E")
     parser.add_argument('--local_bs', type=int, default=16,
                         help="local batch size: B")
-    parser.add_argument('--lr', type=float, default=0.01,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='learning rate')
     parser.add_argument('--momentum', type=float, default=0.5,
                         help='SGD momentum (default: 0.5)')
+    parser.add_argument('--norm_mean', type=float, default=0.5,
+                        help="normalize the data to norm_mean")
+    parser.add_argument('--norm_std', type=float, default=0.5,
+                        help="normalize the data to norm_std")     
+    parser.add_argument('--test_batch_size', type=int, default=1000,
+                        help="testset batch size") 
 
     # model arguments
-    parser.add_argument('--model', type=str, default='mlp', help='model name')
+    parser.add_argument('--model', type=str, default='simpleCNN', help='model name')
     parser.add_argument('--kernel_num', type=int, default=9,
                         help='number of each kind of kernel')
     parser.add_argument('--kernel_sizes', type=str, default='3,4,5',
@@ -45,8 +53,10 @@ def args_parser():
                         help='dim_hidden')
 
     # other arguments
-    parser.add_argument('--dataset', type=str, default='mnist', help="name \
+    parser.add_argument('--dataset', type=str, default='cifar', help="name \
                         of dataset")
+    parser.add_argument('--data', type=str, default='cifar', help="name \
+                        of dataset") 
     parser.add_argument('--num_classes', type=int, default=10, help="number \
                         of classes")
     parser.add_argument('--gpu', default=None, help="To use cuda, set \

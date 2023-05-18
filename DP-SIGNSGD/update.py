@@ -5,6 +5,7 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, TensorDataset
+import numpy as np
 
 class IIDBatchSampler:
     def __init__(self, dataset, minibatch_size, iterations):
@@ -168,11 +169,11 @@ class LocalUpdate(object):
                     optimizer.microbatch_step()
                 optimizer.step()
 
-                if self.args.verbose and (batch_idx % 10 == 0):
-                    print('| Global Round : {} | Local Epoch : {} | [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                        global_round, 1, batch_idx * len(images),
-                        len(self.trainloader.dataset),
-                        100. * batch_idx / len(self.trainloader), loss.item()))
+                # if self.args.verbose and (batch_idx % 10 == 0):
+                #     print('| Global Round : {} | Local Epoch : {} | [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                #         global_round, 1, batch_idx * len(images),
+                #         len(self.trainloader.dataset),
+                #         100. * batch_idx / len(self.trainloader), loss.item()))
                 self.logger.add_scalar('loss', loss.item())
                 batch_loss.append(loss.item())
             epoch_loss.append(sum(batch_loss)/len(batch_loss))    
@@ -198,11 +199,11 @@ class LocalUpdate(object):
                     loss.backward()
                     optimizer.step()
 
-                    if self.args.verbose and (batch_idx % 10 == 0):
-                        print('| Global Round : {} | Local Epoch : {} | [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                            global_round, iter, batch_idx * len(images),
-                            len(self.trainloader.dataset),
-                            100. * batch_idx / len(self.trainloader), loss.item()))
+                    # if self.args.verbose and (batch_idx % 10 == 0):
+                    #     print('| Global Round : {} | Local Epoch : {} | [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                    #         global_round, iter, batch_idx * len(images),
+                    #         len(self.trainloader.dataset),
+                    #         100. * batch_idx / len(self.trainloader), loss.item()))
                     self.logger.add_scalar('loss', loss.item())
                     batch_loss.append(loss.item())
                 epoch_loss.append(sum(batch_loss)/len(batch_loss))

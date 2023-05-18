@@ -6,6 +6,7 @@
 import torch.nn
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
 
 # class MLP(nn.Module):
 
@@ -61,9 +62,36 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
         return out
+class CNN(nn.Module):
+    def __init__(self, num_classes):
+        super(CNN, self).__init__()
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=5, stride=1, padding=2)
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=1, padding=2)
+        self.relu2 = nn.ReLU()
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(32 * 8 * 8, 120)
+        self.fc2 = nn.Linear(120, num_classes)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.relu1(x)
+        x = self.maxpool1(x)
+        x = self.conv2(x)
+        x = self.relu2(x)
+        x = self.maxpool2(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        return x
+
+
+
 
 class simpleCNN(nn.Module):
-    def __init__(self, in_channels, output_size, data_type, n_feature=6):
+    def __init__(self, in_channels=3, output_size=100, data_type='cifar', n_feature=6):
         super(simpleCNN, self).__init__()
         self.n_feature = n_feature
         self.intemidiate_size = 4 if data_type == 'mnist' else 5
@@ -80,6 +108,7 @@ class simpleCNN(nn.Module):
         x = F.relu(x)
         x = F.max_pool2d(x, kernel_size=2)
         x = x.view(-1, self.n_feature * self.intemidiate_size * self.intemidiate_size)  # 4*4 for MNIST 5*5 for CIFAR10
+        # x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x = F.relu(x)
         x = self.fc2(x)
@@ -179,7 +208,7 @@ class CNNCifar(nn.Module):
 
 class modelC(nn.Module):
     def __init__(self, input_size, n_classes=10, **kwargs):
-        super(AllConvNet, self).__init__()
+        super(modelC, self).__init__()
         self.conv1 = nn.Conv2d(input_size, 96, 3, padding=1)
         self.conv2 = nn.Conv2d(96, 96, 3, padding=1)
         self.conv3 = nn.Conv2d(96, 96, 3, padding=1, stride=2)
@@ -210,6 +239,8 @@ class modelC(nn.Module):
         pool_out.squeeze_(-1)
         pool_out.squeeze_(-1)
         return pool_out
+
+
 class ConvNet(torch.nn.Module):
     """ConvNetBN."""
 

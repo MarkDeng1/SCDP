@@ -15,11 +15,15 @@ from tensorboardX import SummaryWriter
 
 from options import args_parser
 from update import LocalUpdate, test_inference
-from models import MLP, CNNMnist, CNNFashion_Mnist, CNNCifar, ResNet18
+from models import MLP, CNNMnist, CNNFashion_Mnist, CNNCifar, ResNet18,ConvNet, simpleCNN
 from utils import get_dataset, average_weights, exp_details, compute_grad_update,init_deterministic,aggregate_signsgd,l2norm
+import util
+import warnings
+
 
 
 if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
     init_deterministic()
     start_time = time.time()
 
@@ -34,36 +38,53 @@ if __name__ == '__main__':
         torch.cuda.set_device(args.gpu)
     device = 'cuda' if args.gpu else 'cpu'
 
+    boardio, textio, best_val_acc, path_best_model = util.initializations(args)
+    train_data_all, test_loader_all = util.data(args)
+    input, output, train_data, val_loader = util.data_split(train_data_all, len(test_loader_all.dataset), args)
+
     # load dataset and user groups
     train_dataset, test_dataset, user_groups = get_dataset(args)
-    print('user_groups',user_groups)
+    # print('user_groups',user_groups)
     # BUILD MODEL
-    if args.model == 'cnn':
-        # Convolutional neural netork
-        if args.dataset == 'mnist':
-            global_model = CNNMnist(args=args)
-        elif args.dataset == 'fmnist':
-            global_model = CNNFashion_Mnist(args=args)
-        elif args.dataset == 'cifar':
-            global_model = CNNCifar(args=args)
-    if args.model == 'ResNet18':
-        global_model = ResNet18(args=args)        
-    if args.model == 'mlp':
-        # Multi-layer preceptron
-        img_size = train_dataset[0][0].shape
-        len_in = 1
-        for x in img_size:
-            len_in *= x
-        print('len_in',len_in)
-        global_model = MLP(dim_in=len_in, dim_hidden=args.dim_hidden,
-                           dim_out=args.num_classes)
+    # if args.model == 'cnn':
+    #     # Convolutional neural netork
+    #     if args.dataset == 'mnist':
+    #         global_model = CNNMnist(args=args)
+    #     elif args.dataset == 'fmnist':
+    #         global_model = CNNFashion_Mnist(args=args)
+    #     elif args.dataset == 'cifar':
+    #         global_model = CNNCifar(args=args)
+    # if args.model == 'ResNet18':
+    #     global_model = ResNet18(args=args)        
+    # if args.model == 'mlp':
+    #     # Multi-layer preceptron
+    #     img_size = train_dataset[0][0].shape
+    #     len_in = 1
+    #     for x in img_size:
+    #         len_in *= x
+    #     print('len_in',len_in)
+    #     global_model = MLP(dim_in=len_in, dim_hidden=args.dim_hidden,
+    #                        dim_out=args.num_classes)
     # else:
     #     exit('Error: unrecognized model')
+    if args.model == 'simpleCNN':
+        global_model = simpleCNN(input, output,args.data)
+    elif args.model == 'resnet18':
+        global_model = ResNet18(args=args)
+    # elif args.model == 'resnet34':
+    #     global_model = model.ResNet34(args.num_class)
+    elif args.model == 'convnet':
+        if args.data == 'mnist':
+            global_model = ConvNet(width=28)
+        else:
+            global_model = ConvNet(width=32)
+    else:
+        exit('Error: unrecognized model')
 
     # Set the model to train and send it to device.
     global_model.to(device)
     global_model.train()
-    print(global_model)
+    # print(global_model)
 
     # copy weights
     global_weights = global_model.state_dict()
@@ -96,7 +117,7 @@ if __name__ == '__main__':
                                       idxs=user_groups[idx], logger=logger)
             w, loss, lr = local_model.update_weights(
                 model=copy.deepcopy(global_model), global_round=epoch, lr_epoch=lr_epoch)
-            print('lr:',lr)
+            # print('lr:',lr)
             local_grad=compute_grad_update(args, global_model, w, lr=lr_epoch)
             if args.Byzantine>0:
                 if idx in Byzantine_user:
@@ -128,18 +149,19 @@ if __name__ == '__main__':
         train_accuracy.append(sum(list_acc)/len(list_acc))
 
         # print global training loss after every 'i' rounds
-        if (epoch+1) % print_every == 0:
-            print(f' \nAvg Training Stats after {epoch+1} global rounds:')
-            print(f'Training Loss : {np.mean(np.array(train_loss))}')
-            print('Train Accuracy: {:.2f}% \n'.format(100*train_accuracy[-1]))
+        # if (epoch+1) % print_every == 0:
+        #     print(f' \nAvg Training Stats after {epoch+1} global rounds:')
+        #     print(f'Training Loss : {np.mean(np.array(train_loss))}')
+        #     print('Train Accuracy: {:.2f}% \n'.format(100*train_accuracy[-1]))
 
         # Test inference after completion of training
         test_acc, test_loss = test_inference(args, global_model, test_dataset)
         test_accs.append(test_acc)
-        print(f' \n Results after {epoch} global rounds of training:')
-        print("|---- Avg Train Accuracy: {:.2f}%".format(100*train_accuracy[-1]))
+        print(f' \n Results after {epoch} global rounds of training: |----Training Loss : {np.mean(np.array(train_loss))}')
+        # print("|---- Avg Train Accuracy: {:.2f}%".format(100*train_accuracy[-1]))
+        # print(f'')
         print("|---- Test Accuracy: {:.2f}%".format(100*test_acc))
-        print('test_accs',test_accs)
+        # print('test_accs',test_accs)
 
     print('test_accs',test_accs)
     # Saving the objects train_loss and train_accuracy:
