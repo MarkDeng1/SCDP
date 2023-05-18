@@ -15,7 +15,7 @@ from tensorboardX import SummaryWriter
 
 from options import args_parser
 from update import LocalUpdate, test_inference
-from models import MLP, CNNMnist, CNNFashion_Mnist, CNNCifar, ResNet18,ConvNet, simpleCNN
+from models import MLP, CNNMnist, CNNFashion_Mnist, CNNCifar, ResNet18,ConvNet, simpleCNN,ResNet,BasicBlock
 from utils import get_dataset, average_weights, exp_details, compute_grad_update,init_deterministic,aggregate_signsgd,l2norm
 import util
 import warnings
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     if args.model == 'simpleCNN':
         global_model = simpleCNN(input, output,args.data)
     elif args.model == 'resnet18':
-        global_model = ResNet18(args=args)
+        global_model = global_model = ResNet(BasicBlock, [2, 2, 2, 2], num_classes=10)
     # elif args.model == 'resnet34':
     #     global_model = model.ResNet34(args.num_class)
     elif args.model == 'convnet':
