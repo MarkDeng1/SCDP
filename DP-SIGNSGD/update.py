@@ -129,7 +129,9 @@ class LocalUpdate(object):
             dataset, list(idxs))
         self.device = 'cuda' if args.gpu else 'cpu'
         # Default criterion set to NLL loss function
-        self.criterion = nn.NLLLoss().to(self.device)
+        self.criterion = nn.CrossEntropyLoss(reduction='mean').to(self.device)
+        self.test_criterion = nn.CrossEntropyLoss(reduction='sum').to(self.device)
+        # self.criterion = nn.NLLLoss().to(self.device)
     
 
     def train_val_test(self, dataset, idxs):
@@ -223,7 +225,7 @@ class LocalUpdate(object):
 
             # Inference
             outputs = model(images)
-            batch_loss = self.criterion(outputs, labels)
+            batch_loss = self.test_criterion(outputs, labels)
             loss += batch_loss.item()
 
             # Prediction
@@ -244,7 +246,8 @@ def test_inference(args, model, test_dataset):
     loss, total, correct = 0.0, 0.0, 0.0
 
     device = 'cuda' if args.gpu else 'cpu'
-    criterion = nn.NLLLoss().to(device)
+    # criterion = nn.NLLLoss().to(device)
+    criterion = nn.CrossEntropyLoss(reduction='sum').to(device)
     testloader = DataLoader(test_dataset, batch_size=128,
                             shuffle=False)
 
