@@ -208,6 +208,8 @@ def add_gradient_updates(grad_update_1, grad_update_2, weight = 1.0):
     assert len(grad_update_1) == len(grad_update_2), "Lengths of the two grad_updates not equal"
     
     for param_1, param_2 in zip(grad_update_1, grad_update_2):
+        param_1 = param_1.data.to('cuda:0')
+        param_2 = param_2.data.to('cuda:0')
         param_1.data += param_2.data * weight
 
 def add_update_to_model(model, update, weight=1.0, device=None):
