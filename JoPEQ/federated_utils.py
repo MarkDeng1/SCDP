@@ -42,9 +42,12 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
         SNR_users = []
         for user_idx in range(0, len(local_models)):
             local_weights_orig = local_models[user_idx]['model'].state_dict()[key] - state_dict[key]
+            # if key.startswith('model.bn'):
+            #     local_weights = local_weights_orig
+            # else:
+            #     local_weights = mechanism(local_weights_orig)
             local_weights = mechanism(local_weights_orig)
-            # print('key:',key)
-            if args.compression == 'FLC':
+            if args.compression == 'FLC' and not key.startswith('model.bn'):
                 new_gradient = local_weights.cpu().numpy()
                 flattened_weights = np.abs(new_gradient.flatten())
                 thresh = np.percentile(flattened_weights, args.compression_rate)
@@ -52,7 +55,6 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
                 local_weights = torch.Tensor(new_gradient).to(args.device)
             elif args.compression == 'OLC':
                 if key.startswith('fc') or key.startswith('linear'):
-                    print('1')
                     new_gradient = local_weights.cpu().numpy()
                     flattened_weights = np.abs(new_gradient.flatten())
                     thresh = np.percentile(flattened_weights, args.compression_rate)
