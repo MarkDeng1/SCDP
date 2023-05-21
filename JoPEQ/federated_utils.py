@@ -46,8 +46,12 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
             #     local_weights = local_weights_orig
             # else:
             #     local_weights = mechanism(local_weights_orig)
-            local_weights = mechanism(local_weights_orig)
-            if args.compression == 'FLC' and not key.startswith('model.bn'):
+            # local_weights = mechanism(local_weights_orig)
+            local_weights = local_weights_orig
+            # print('key:' ,key)
+            # print('local_weights shapes:',local_weights.shape)
+            if args.compression == 'FLC' and 'num_batches' not in key:
+                # print('1')
                 new_gradient = local_weights.cpu().numpy()
                 flattened_weights = np.abs(new_gradient.flatten())
                 thresh = np.percentile(flattened_weights, args.compression_rate)
@@ -61,6 +65,8 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
                     new_gradient = np.where(abs(new_gradient)<thresh,0,new_gradient)
                     local_weights = torch.Tensor(new_gradient).to(args.device)
             # SNR_users.append(torch.var(local_weights_orig) / torch.var(local_weights_orig - local_weights))
+            # print('local_weights shapes_after:',local_weights.shape)
+            # print('local_weights_average_shape',local_weights_average.shape)
             local_weights_average += local_weights
         # SNR_layers.append(mean(SNR_users))
         state_dict[key] += (local_weights_average / len(local_models)).to(state_dict[key].dtype)
@@ -110,7 +116,7 @@ class JoPEQ:  # Privacy Quantization class
             std = 3 * std
             input = (input - mean) / std
 
-            if self.privacy is not None:
+            if self.privacy:
                 input = self.privacy(input)
 
             if self.quantizer is not None:

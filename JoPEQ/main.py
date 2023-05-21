@@ -26,7 +26,7 @@ if __name__ == '__main__':
     if args.model == 'simpleCNN':
         global_model = models.simpleCNN(input, output,args.data)
     elif args.model == 'resnet18':
-        global_model = models.ResNet(models.BasicBlock, [2, 2, 2, 2], num_classes=args.num_class)
+        global_model = models.ResNet(models.BasicBlock, [2, 2, 2, 2], num_classes=10)
     elif args.model == 'resnet34':
         global_model = models.ResNet34(args.num_class)
     elif args.model == 'convnet':
