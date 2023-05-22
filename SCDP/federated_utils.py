@@ -41,9 +41,11 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
         list_local_weights = []
         for user_idx in range(0, len(local_models)):
             local_weights_orig = local_models[user_idx]['model'].state_dict()[key] - state_dict[key]
+            
             if args.privacy and args.quantization:
                 local_weights = mechanism(local_weights_orig)
-                if key.startswith('linear'):
+                if 'linear' in key or 'fc' in key:
+                    # print(key)
                     local_weights_bi = binary_convert(local_weights, p=0.98)
                     list_local_weights.append(local_weights_bi)
                 else:
@@ -55,7 +57,7 @@ def update_state_dict(state_dict, local_models, mechanism, binary_convert, proce
             else: 
                 local_weights_average += local_weights_orig
         if args.privacy and args.quantization:
-            if key.startswith('linear'):
+            if 'linear' in key or 'fc' in key:
                 value = state_dict[key] + process_tensors(list_local_weights, p=0.98).to(args.device)
                 state_dict[key] = value.detach().clone()
             else:
@@ -76,7 +78,7 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
 # }
     args = args_parser()
     state_dict = copy.deepcopy(global_model.state_dict())
-    SNR_layers = []
+    # SNR_layers = []
     
     update_state_dict(state_dict, local_models, mechanism, binary_convert, process_tensors, args)
     # for key in state_dict.keys():
