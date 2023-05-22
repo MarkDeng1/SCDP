@@ -25,10 +25,10 @@ def args_parser():
                         help="testset batch size")
 
     # federated arguments
-    parser.add_argument('--model', type=str, default='convnet',
+    parser.add_argument('--model', type=str, default='simpleCNN',
                         choices=['cnn2', 'cnn3', 'mlp', 'linear'],
                         help="model to use (cnn, mlp)")
-    parser.add_argument('--num_users', type=int, default=30,
+    parser.add_argument('--num_users', type=int, default=20,
                         help="number of users participating in the federated learning")
     parser.add_argument('--local_epochs', type=int, default=1,
                         help="number of local epochs")
@@ -38,12 +38,12 @@ def args_parser():
                         help="number of global epochs")
 
     # privacy arguments
-    parser.add_argument('--privacy', type=bool, default=False,
+    parser.add_argument('--privacy', type=bool, default=True,
                         help="whether to preserve privacy")
     parser.add_argument('--privacy_noise', type=str, default='jopeq_vector',
                         choices=['laplace', 't', 'jopeq_scalar', 'jopeq_vector'],
                         help="types of PPNs to choose from")
-    parser.add_argument('--epsilon', type=float, default=4,
+    parser.add_argument('--epsilon', type=float, default=1,
                         help="privacy budget (epsilon)")
     parser.add_argument('--sigma_squared', type=float, default=0.2,
                         help="scale for t-dist Sigma (identity matrix)")
@@ -51,18 +51,18 @@ def args_parser():
                         help="degrees of freedom for t-dist")
     # (epsilon, sigma_squared, nu): (0.84,3,3), (1,2,3), (2,1,12), (2,0.5,4), (3,1,32), (3,0.5,14), (3,0.2,4), (4,0.85,50), (4,0.1,3), (4,0.2,4), (4,0.5,29)
     # compression 
-    parser.add_argument('--compression', type=str, default='OLC',
+    parser.add_argument('--compression', type=str, default='None',
                         help="FLC|OLC|None")
     parser.add_argument('--compression_rate', type=float, default=60,
                         help="The compression rate")
 
     # quantization arguments
-    parser.add_argument('--quantization', type=bool, default=False,
+    parser.add_argument('--quantization', type=bool, default=True,
                         help="whether to perform quantization")
     parser.add_argument('--lattice_dim', type=int, default=2,
                         choices=[1, 2],
                         help="perform scalar (lattice_dim=1) or lattice (lattice_dim=2) quantization ")
-    parser.add_argument('--R', type=int, default=1,
+    parser.add_argument('--R', type=int, default=16,
                         help="compression rate (number of bits per sample)")
     parser.add_argument('--gamma', type=float, default=set_gamma(parser.parse_args()),
                         help="quantizer dynamic range")
@@ -79,7 +79,7 @@ def args_parser():
                         help="momentum")
     parser.add_argument('--lr_scheduler', action='store_false',
                         help="reduce the learning rat when val_acc has stopped improving (increasing)")
-    parser.add_argument('--device', type=str, default='cpu',
+    parser.add_argument('--device', type=str, default='cuda:0',
                         choices=['cuda:0', 'cuda:1', 'cpu'],
                         help="device to use (gpu or cpu)")
     parser.add_argument('--seed', type=float, default=1234,

@@ -21,8 +21,8 @@ def federated_setup(global_model, train_data, args):
         user['opt'] = optim.SGD(user['model'].parameters(), lr=args.lr,
                                 momentum=args.momentum) if args.optimizer == 'sgd' \
             else optim.Adam(user['model'].parameters(), lr=args.lr)
-        if args.lr_scheduler:
-            user['scheduler'] = optim.lr_scheduler.ReduceLROnPlateau(user['opt'], patience=10, factor=0.1, verbose=True)
+        # if args.lr_scheduler:
+        #     user['scheduler'] = optim.lr_scheduler.ReduceLROnPlateau(user['opt'], patience=10, factor=0.1, verbose=True)
         local_models[user_idx] = user
     return local_models
 
@@ -47,7 +47,7 @@ def aggregate_models(local_models, global_model, mechanism):  # FeaAvg
             # else:
             #     local_weights = mechanism(local_weights_orig)
             # local_weights = mechanism(local_weights_orig)
-            local_weights = local_weights_orig
+            local_weights = mechanism(local_weights_orig)
             # print('key:' ,key)
             # print('local_weights shapes:',local_weights.shape)
             if args.compression == 'FLC' and 'num_batches' not in key:

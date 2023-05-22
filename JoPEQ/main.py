@@ -70,8 +70,8 @@ if __name__ == '__main__':
                 user = local_models[user_idx]
                 train_loss = utils.train_one_epoch(user['data'], user['model'], user['opt'],
                                                    train_creterion, args.device, args.local_iterations)
-                if args.lr_scheduler:
-                    user['scheduler'].step(train_loss)
+                # if args.lr_scheduler:
+                #     user['scheduler'].step(train_loss)
                 user_loss.append(train_loss)
             users_loss.append(mean(user_loss))
 
